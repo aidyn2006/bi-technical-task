@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, Query, Request, status
+from fastapi import APIRouter, Depends, File, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import get_current_user
@@ -59,3 +59,13 @@ async def create_product(
     _: User = Depends(get_current_user),
 ) -> ProductOut:
     return await service.create(payload)
+
+
+@router.post("/{product_id}/image/", response_model=ProductOut)
+async def upload_product_image(
+    product_id: uuid.UUID,
+    file: UploadFile = File(...),
+    service: ProductService = Depends(get_product_service),
+    _: User = Depends(get_current_user),
+) -> ProductOut:
+    return await service.upload_image(product_id, file)

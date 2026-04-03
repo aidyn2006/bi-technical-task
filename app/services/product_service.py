@@ -1,10 +1,11 @@
 import uuid
 from decimal import Decimal
 
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, Request, UploadFile, status
 
 from app.repositories.product_repo import ProductRepository
 from app.schemas.product import ProductCreate, ProductListOut, ProductOut
+from app.utils.images import save_product_image
 from app.utils.pagination import build_pagination_urls
 
 
@@ -56,4 +57,12 @@ class ProductService:
 
     async def create(self, data: ProductCreate) -> ProductOut:
         product = await self.repo.create(data)
+        return ProductOut.model_validate(product)
+
+    async def upload_image(self, product_id: uuid.UUID, file: UploadFile) -> ProductOut:
+        product = await self.repo.get_by_id(product_id)
+        if not product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        image_path = await save_product_image(file)
+        product = await self.repo.update_image(product, image_path)
         return ProductOut.model_validate(product)

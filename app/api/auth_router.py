@@ -1,9 +1,11 @@
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_optional_session_id
 from app.db.session import get_db
 from app.models.user import User
+from app.repositories.cart_repo import CartRepository
 from app.repositories.user_repo import UserRepository
 from app.schemas.user import Token, UserLogin, UserOut, UserRegister
 from app.services.auth_service import AuthService
@@ -12,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
 def get_auth_service(db: AsyncSession = Depends(get_db)) -> AuthService:
-    return AuthService(UserRepository(db))
+    return AuthService(UserRepository(db), CartRepository(db))
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
@@ -26,9 +28,10 @@ async def register(
 @router.post("/login", response_model=Token)
 async def login(
     payload: UserLogin,
+    session_id: str | None = Depends(get_optional_session_id),
     service: AuthService = Depends(get_auth_service),
 ) -> Token:
-    return await service.login(payload)
+    return await service.login(payload, session_id)
 
 
 @router.get("/me", response_model=UserOut)

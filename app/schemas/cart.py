@@ -27,6 +27,6 @@ class CartOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    session_id: str
+    session_id: str | None
     items: list[CartItemOut]
     total_price: Decimal

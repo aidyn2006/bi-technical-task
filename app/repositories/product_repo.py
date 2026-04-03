@@ -52,6 +52,11 @@ class ProductRepository:
         result = await self.db.execute(select(Product).where(Product.id == product_id))
         return result.scalar_one_or_none()
 
+    async def update_image(self, product: Product, image_path: str) -> Product:
+        product.image = image_path
+        await self.db.flush()
+        return product
+
     async def create(self, data: ProductCreate) -> Product:
         product = Product(**data.model_dump())
         self.db.add(product)

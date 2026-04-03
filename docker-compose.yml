@@ -28,6 +28,8 @@ services:
         condition: service_healthy
     volumes:
       - .:/app
+      - media_data:/app/media
 
 volumes:
   postgres_data:
+  media_data:

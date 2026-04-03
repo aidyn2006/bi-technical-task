@@ -13,5 +13,11 @@ class Settings(BaseSettings):
     PROJECT_NAME: str = "Product Catalog API"
     API_PREFIX: str = "/api"
 
+    MEDIA_DIR: str = "media"
+    MEDIA_URL: str = "/media"
+    BASE_URL: str = "http://localhost:8000"
+    ALLOWED_IMAGE_TYPES: list[str] = ["image/jpeg", "image/png", "image/webp"]
+    MAX_IMAGE_SIZE_MB: int = 5
+
 
 settings = Settings()

@@ -71,6 +71,20 @@ class CartRepository:
         await self.db.flush()
         return item
 
+    async def merge_session_into_user(self, session_id: str, user_id: uuid.UUID) -> None:
+        """Переносит товары из анонимной корзины в корзину юзера, затем удаляет сессионную."""
+        session_cart = await self.get_by_session(session_id)
+        if not session_cart or not session_cart.items:
+            return
+
+        user_cart = await self.get_or_create_for_user(user_id)
+
+        for item in session_cart.items:
+            await self.add_item(user_cart.id, item.product_id, item.quantity)
+
+        await self.db.delete(session_cart)
+        await self.db.flush()
+
     async def update_item(self, item: CartItem, quantity: int) -> CartItem:
         item.quantity = quantity
         await self.db.flush()
