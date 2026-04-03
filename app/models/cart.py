@@ -12,7 +12,8 @@ class Cart(Base):
     __tablename__ = "carts"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    session_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    session_id: Mapped[str | None] = mapped_column(String(255), unique=True, index=True, nullable=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), unique=True, index=True, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     items: Mapped[list["CartItem"]] = relationship(

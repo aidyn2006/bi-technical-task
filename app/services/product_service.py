@@ -4,7 +4,7 @@ from decimal import Decimal
 from fastapi import HTTPException, Request, status
 
 from app.repositories.product_repo import ProductRepository
-from app.schemas.product import ProductListOut, ProductOut
+from app.schemas.product import ProductCreate, ProductListOut, ProductOut
 from app.utils.pagination import build_pagination_urls
 
 
@@ -25,10 +25,6 @@ class ProductService:
         limit: int,
         offset: int,
     ) -> ProductListOut:
-        if sort_by not in ("name", "price"):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="sort_by must be 'name' or 'price'")
-        if sort_order not in ("asc", "desc"):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="sort_order must be 'asc' or 'desc'")
         if min_price is not None and max_price is not None and min_price > max_price:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="min_price must be <= max_price")
 
@@ -56,4 +52,8 @@ class ProductService:
         product = await self.repo.get_by_id(product_id)
         if not product:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        return ProductOut.model_validate(product)
+
+    async def create(self, data: ProductCreate) -> ProductOut:
+        product = await self.repo.create(data)
         return ProductOut.model_validate(product)

@@ -11,6 +11,14 @@ class CartRepository:
     def __init__(self, db: AsyncSession) -> None:
         self.db = db
 
+    async def get_by_user_id(self, user_id: uuid.UUID) -> Cart | None:
+        result = await self.db.execute(
+            select(Cart)
+            .where(Cart.user_id == user_id)
+            .options(selectinload(Cart.items).selectinload(CartItem.product))
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_session(self, session_id: str) -> Cart | None:
         result = await self.db.execute(
             select(Cart)
@@ -19,16 +27,20 @@ class CartRepository:
         )
         return result.scalar_one_or_none()
 
-    async def create(self, session_id: str) -> Cart:
-        cart = Cart(session_id=session_id)
-        self.db.add(cart)
-        await self.db.flush()
+    async def get_or_create_for_user(self, user_id: uuid.UUID) -> Cart:
+        cart = await self.get_by_user_id(user_id)
+        if not cart:
+            cart = Cart(user_id=user_id)
+            self.db.add(cart)
+            await self.db.flush()
         return cart
 
-    async def get_or_create(self, session_id: str) -> Cart:
+    async def get_or_create_for_session(self, session_id: str) -> Cart:
         cart = await self.get_by_session(session_id)
         if not cart:
-            cart = await self.create(session_id)
+            cart = Cart(session_id=session_id)
+            self.db.add(cart)
+            await self.db.flush()
         return cart
 
     async def get_item(self, item_id: uuid.UUID) -> CartItem | None:
@@ -54,7 +66,6 @@ class CartRepository:
             existing.quantity += quantity
             await self.db.flush()
             return existing
-
         item = CartItem(cart_id=cart_id, product_id=product_id, quantity=quantity)
         self.db.add(item)
         await self.db.flush()

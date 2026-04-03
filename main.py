@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth_router import router as auth_router
 from app.api.cart_router import router as cart_router
 from app.api.product_router import router as product_router
 from app.core.config import settings
@@ -20,6 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth_router, prefix=settings.API_PREFIX)
 app.include_router(product_router, prefix=settings.API_PREFIX)
 app.include_router(cart_router, prefix=settings.API_PREFIX)
 

@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
+from app.schemas.product import ProductCreate
 
 
 class ProductRepository:
@@ -50,3 +51,9 @@ class ProductRepository:
     async def get_by_id(self, product_id: uuid.UUID) -> Product | None:
         result = await self.db.execute(select(Product).where(Product.id == product_id))
         return result.scalar_one_or_none()
+
+    async def create(self, data: ProductCreate) -> Product:
+        product = Product(**data.model_dump())
+        self.db.add(product)
+        await self.db.flush()
+        return product

@@ -11,6 +11,7 @@ from alembic import context
 from app.db.base import Base
 from app.models.product import Product  # noqa: F401
 from app.models.cart import Cart, CartItem  # noqa: F401
+from app.models.user import User  # noqa: F401
 
 config = context.config
 

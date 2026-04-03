@@ -1,12 +1,14 @@
 import uuid
 from decimal import Decimal
 
-from fastapi import APIRouter, Depends, Query, Request
+from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.dependencies import get_current_user
 from app.db.session import get_db
+from app.models.user import User
 from app.repositories.product_repo import ProductRepository
-from app.schemas.product import ProductListOut, ProductOut
+from app.schemas.product import ProductCreate, ProductListOut, ProductOut
 from app.services.product_service import ProductService
 from app.utils.pagination import PaginationParams, get_pagination
 
@@ -48,3 +50,12 @@ async def get_product(
     service: ProductService = Depends(get_product_service),
 ) -> ProductOut:
     return await service.get_detail(product_id)
+
+
+@router.post("/", response_model=ProductOut, status_code=status.HTTP_201_CREATED)
+async def create_product(
+    payload: ProductCreate,
+    service: ProductService = Depends(get_product_service),
+    _: User = Depends(get_current_user),
+) -> ProductOut:
+    return await service.create(payload)
