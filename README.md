@@ -26,19 +26,13 @@
 
 ## Быстрый запуск (Docker)
 
-1. Скопируйте переменные окружения:
-
-```bash
-cp .env.example .env
-```
-
-2. Поднимите сервисы:
+1. Поднимите сервис по докер компосее:
 
 ```bash
 docker-compose up --build
 ```
 
-3. API будет доступен:
+2.API будет доступен:
 
 - `http://localhost:8000`
 - Swagger: `http://localhost:8000/docs`
