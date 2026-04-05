@@ -23,8 +23,11 @@ def get_product_service(db: AsyncSession = Depends(get_db)) -> ProductService:
 async def list_products(
     request: Request,
     category: str | None = Query(default=None),
+    categories: list[str] | None = Query(default=None),
     min_price: Decimal | None = Query(default=None, gt=0),
     max_price: Decimal | None = Query(default=None, gt=0),
+    name: str | None = Query(default=None, min_length=1),
+    has_image: bool | None = Query(default=None),
     search: str | None = Query(default=None, min_length=1),
     sort_by: str = Query(default="name", pattern="^(name|price)$"),
     sort_order: str = Query(default="asc", pattern="^(asc|desc)$"),
@@ -34,8 +37,11 @@ async def list_products(
     return await service.get_list(
         request,
         category=category,
+        categories=categories,
         min_price=min_price,
         max_price=max_price,
+        name=name,
+        has_image=has_image,
         search=search,
         sort_by=sort_by,
         sort_order=sort_order,

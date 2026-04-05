@@ -13,8 +13,11 @@
 Query-параметры:
 
 - `category` (string, optional)
+- `categories` (list[string], optional, можно передавать несколько раз)
 - `min_price` (decimal > 0, optional)
 - `max_price` (decimal > 0, optional)
+- `name` (string, optional, поиск по имени товара)
+- `has_image` (bool, optional)
 - `search` (string, optional)
 - `sort_by` (`name` | `price`, default `name`)
 - `sort_order` (`asc` | `desc`, default `asc`)

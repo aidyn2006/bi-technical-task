@@ -105,7 +105,7 @@ uvicorn main:app --reload
 Получить товары:
 
 ```bash
-curl "http://localhost:8000/api/products/?limit=20&offset=0&search=iphone&sort_by=price&sort_order=asc"
+curl "http://localhost:8000/api/products/?limit=20&offset=0&search=iphone&sort_by=price&sort_order=asc&has_image=true"
 ```
 
 Добавить товар в корзину как гость:
@@ -135,4 +135,11 @@ main.py          # точка входа FastAPI
 
 ## Примечание
 
-Тесты пока не добавлены. Для демонстрации и проверки API удобнее использовать Swagger (`/docs`) или curl.
+Для ручной проверки API удобно использовать Swagger (`/docs`) или curl.
+
+## Тесты
+
+```bash
+pip install -r requirements-dev.txt
+pytest -q
+```

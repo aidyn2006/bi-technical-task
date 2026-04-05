@@ -1,7 +1,7 @@
 import uuid
 from decimal import Decimal
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.product import Product
@@ -16,8 +16,11 @@ class ProductRepository:
         self,
         *,
         category: str | None = None,
+        categories: list[str] | None = None,
         min_price: Decimal | None = None,
         max_price: Decimal | None = None,
+        name: str | None = None,
+        has_image: bool | None = None,
         search: str | None = None,
         sort_by: str = "name",
         sort_order: str = "asc",
@@ -28,10 +31,20 @@ class ProductRepository:
 
         if category:
             query = query.where(Product.category == category)
+        if categories:
+            normalized = [c.strip() for c in categories if c and c.strip()]
+            if normalized:
+                query = query.where(Product.category.in_(normalized))
         if min_price is not None:
             query = query.where(Product.price >= min_price)
         if max_price is not None:
             query = query.where(Product.price <= max_price)
+        if name:
+            query = query.where(Product.name.ilike(f"%{name}%"))
+        if has_image is True:
+            query = query.where(Product.image.is_not(None), Product.image != "")
+        elif has_image is False:
+            query = query.where(or_(Product.image.is_(None), Product.image == ""))
         if search:
             pattern = f"%{search}%"
             query = query.where(

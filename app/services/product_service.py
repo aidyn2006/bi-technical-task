@@ -31,8 +31,11 @@ class ProductService:
         request: Request,
         *,
         category: str | None,
+        categories: list[str] | None,
         min_price: Decimal | None,
         max_price: Decimal | None,
+        name: str | None,
+        has_image: bool | None,
         search: str | None,
         sort_by: str,
         sort_order: str,
@@ -44,8 +47,11 @@ class ProductService:
 
         total, products = await self.repo.get_list(
             category=category,
+            categories=categories,
             min_price=min_price,
             max_price=max_price,
+            name=name,
+            has_image=has_image,
             search=search,
             sort_by=sort_by,
             sort_order=sort_order,
