@@ -3,15 +3,28 @@ from decimal import Decimal
 
 from fastapi import HTTPException, Request, UploadFile, status
 
+from app.models.product import Product
 from app.repositories.product_repo import ProductRepository
 from app.schemas.product import ProductCreate, ProductListOut, ProductOut
-from app.utils.images import save_product_image
+from app.utils.images import build_image_url, save_product_image
 from app.utils.pagination import build_pagination_urls
 
 
 class ProductService:
     def __init__(self, repo: ProductRepository) -> None:
         self.repo = repo
+
+    @staticmethod
+    def _to_product_out(product: Product) -> ProductOut:
+        out = ProductOut.model_validate(product)
+        out.image = build_image_url(out.image)
+        return out
+
+    async def _get_or_404(self, product_id: uuid.UUID) -> Product:
+        product = await self.repo.get_by_id(product_id)
+        if not product:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        return product
 
     async def get_list(
         self,
@@ -46,23 +59,19 @@ class ProductService:
             count=total,
             next=next_url,
             previous=previous_url,
-            results=[ProductOut.model_validate(p) for p in products],
+            results=[self._to_product_out(p) for p in products],
         )
 
     async def get_detail(self, product_id: uuid.UUID) -> ProductOut:
-        product = await self.repo.get_by_id(product_id)
-        if not product:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
-        return ProductOut.model_validate(product)
+        product = await self._get_or_404(product_id)
+        return self._to_product_out(product)
 
     async def create(self, data: ProductCreate) -> ProductOut:
         product = await self.repo.create(data)
-        return ProductOut.model_validate(product)
+        return self._to_product_out(product)
 
     async def upload_image(self, product_id: uuid.UUID, file: UploadFile) -> ProductOut:
-        product = await self.repo.get_by_id(product_id)
-        if not product:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        product = await self._get_or_404(product_id)
         image_path = await save_product_image(file)
         product = await self.repo.update_image(product, image_path)
-        return ProductOut.model_validate(product)
+        return self._to_product_out(product)
